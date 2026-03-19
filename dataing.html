@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunger End | Premium Digital Menu</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        :root {
+            --primary: #27ae60;
+            --dark: #1a1a1a;
+            --light: #f8f9fa;
+            --accent: #f1c40f;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background-color: #f4f7f6; color: var(--dark); overflow-x: hidden; }
+
+        /* --- NAVIGATION --- */
+        .navbar {
+            position: fixed; top: 0; width: 100%; height: 85px; 
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 8%; box-shadow: 0 2px 20px rgba(0,0,0,0.05); z-index: 1000;
+        }
+        .logo { font-size: 28px; font-weight: 700; letter-spacing: -1px; }
+        .logo span { color: var(--primary); }
+        
+        .search-container { flex-grow: 0.5; margin: 0 20px; }
+        .search-bar {
+            width: 100%; padding: 12px 25px; border-radius: 50px;
+            border: 1px solid #ddd; outline: none; transition: 0.3s;
+            font-size: 14px;
+        }
+        .search-bar:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(39,174,96,0.15); }
+
+        .cart-status { 
+            cursor: pointer; position: relative; padding: 10px;
+            transition: 0.3s; border-radius: 50%;
+        }
+        .cart-status:hover { background: #f0f0f0; }
+        .badge {
+            position: absolute; top: 0; right: 0;
+            background: var(--primary); color: white;
+            font-size: 11px; padding: 2px 6px; border-radius: 50%;
+        }
+
+        /* --- CATEGORIES --- */
+        .category-bar {
+            margin-top: 110px; display: flex; justify-content: center; 
+            gap: 12px; padding: 20px; flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 10px 22px; border-radius: 50px; border: none;
+            background: white; font-weight: 600; cursor: pointer;
+            transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            font-size: 13px; text-transform: uppercase;
+        }
+        .filter-btn.active { background: var(--primary); color: white; transform: scale(1.05); }
+
+        /* --- MENU GRID --- */
+        .menu-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 35px; padding: 30px 8% 80px;
+        }
+
+        /* --- CARD STYLING --- */
+        .card {
+            background: white; border-radius: 20px; overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .card:hover { transform: translateY(-10px); box-shadow: var(--shadow); }
+        
+        .img-container { position: relative; height: 200px; overflow: hidden; }
+        .card img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s; }
+        .card:hover img { transform: scale(1.1); }
+
+        .card-content { padding: 20px; }
+        .card-content h3 { font-size: 1.15rem; margin-bottom: 5px; color: #333; }
+        .price-tag { font-size: 1.25rem; color: var(--primary); font-weight: 700; display: block; margin-bottom: 15px; }
+
+        .action-row { display: flex; align-items: center; gap: 10px; }
+        .qty-box { 
+            display: flex; background: #f4f4f4; border-radius: 12px; 
+            align-items: center; padding: 2px;
+        }
+        .btn-qty { 
+            background: transparent; border: none; width: 35px; height: 35px;
+            cursor: pointer; font-weight: bold; font-size: 18px; 
+        }
+        .qty-input { width: 30px; border: none; background: transparent; text-align: center; font-weight: 700; }
+        
+        .btn-add {
+            flex-grow: 1; background: var(--dark); color: white;
+            border: none; padding: 12px; border-radius: 12px;
+            font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 13px;
+        }
+        .btn-add:hover { background: var(--primary); }
+
+        /* --- CART SIDEBAR --- */
+        #cart-sidebar {
+            position: fixed; right: -400px; top: 0; width: 380px; height: 100%;
+            background: white; box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+            z-index: 2000; transition: 0.4s ease-in-out; padding: 30px;
+            display: flex; flex-direction: column;
+        }
+        #cart-sidebar.open { right: 0; }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .cart-items { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
+        .cart-item { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 0; border-bottom: 1px solid #eee;
+        }
+        .cart-total-section { padding-top: 20px; border-top: 2px solid #f4f4f4; }
+
+        @media (max-width: 600px) {
+            #cart-sidebar { width: 100%; }
+            .search-container { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">Hunger<span>End</span></div>
+        <div class="search-container">
+            <input type="text" class="search-bar" placeholder="Search delicious food..." onkeyup="searchMenu(this.value)">
+        </div>
+        <div class="cart-status" onclick="toggleCart()">
+            <span style="font-size: 1.6rem;">🛒</span>
+            <span id="cart-count" class="badge">0</span>
+        </div>
+    </nav>
+
+    <div class="category-bar">
+        <button class="filter-btn active" onclick="filterMenu('all', this)">All Menu</button>
+        <button class="filter-btn" onclick="filterMenu('food', this)">Main Dishes</button>
+        <button class="filter-btn" onclick="filterMenu('snacks', this)">Snacks</button>
+        <button class="filter-btn" onclick="filterMenu('drinks', this)">Drinks</button>
+    </div>
+
+    <main id="menu-grid" class="menu-grid"></main>
+
+    <div id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Your Order</h2>
+            <button onclick="toggleCart()" style="border:none; background:none; font-size: 2rem; cursor:pointer;">&times;</button>
+        </div>
+        <div id="cart-list" class="cart-items">
+            </div>
+        <div class="cart-total-section">
+            <div style="display:flex; justify-content:space-between; font-size: 1.2rem; font-weight:700;">
+                <span>Total Amount:</span>
+                <span>Rs <span id="cart-total">0</span></span>
+            </div>
+            <button class="btn-add" style="width: 100%; margin-top: 20px; padding: 18px; background: var(--primary); font-size: 16px;">
+                Confirm Order
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const menuData = [
+            { id: 1, cat: "food", name: "Butter Chicken", price: 560, img: "http://googleusercontent.com/image_collection/image_retrieval/870836241368829415_0" },
+            { id: 2, cat: "food", name: "Buff Keema Noodles", price: 290, img: "http://googleusercontent.com/image_collection/image_retrieval/17932068839751365607_1" },
+            { id: 3, cat: "snacks", name: "Chicken Momo", price: 250, img: "https://images.unsplash.com/photo-1534422298391-e4f8c170db06?w=500" },
+            { id: 4, cat: "snacks", name: "Mustang Aalu", price: 290, img: "http://googleusercontent.com/image_collection/image_retrieval/16631422254487477946_2" },
+            { id: 5, cat: "drinks", name: "Virgin Mojito", price: 180, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=500" }
+        ];
+
+        let cart = [];
+
+        function render(items) {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = items.map(item => `
+                <div class="card animate__animated animate__fadeInUp">
+                    <div class="img-container">
+                        <img src="${item.img}" alt="${item.name}">
+                    </div>
+                    <div class="card-content">
+                        <h3>${item.name}</h3>
+                        <span class="price-tag">Rs ${item.price}</span>
+                        <div class="action-row">
+                            <div class="qty-box">
+                                <button class="btn-qty" onclick="changeQty(${item.id}, -1)">-</button>
+                                <input type="text" id="q-${item.id}" value="1" class="qty-input" readonly>
+                                <button class="btn-qty" onclick="changeQty(${item.id}, 1)">+</button>
+                            </div>
+                            <button class="btn-add" onclick="addToCart(${item.id})">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function changeQty(id, delta) {
+            const input = document.getElementById(`q-${id}`);
+            let val = parseInt(input.value) + delta;
+            if (val >= 1) input.value = val;
+        }
+
+        function addToCart(id) {
+            const item = menuData.find(m => m.id === id);
+            const qty = parseInt(document.getElementById(`q-${id}`).value);
+            
+            const existing = cart.find(c => c.id === id);
+            if (existing) {
+                existing.qty += qty;
+            } else {
+                cart.push({ ...item, qty });
+            }
+            updateUI();
+            // Reset input to 1 after adding
+            document.getElementById(`q-${id}`).value = 1;
+        }
+
+        function updateUI() {
+            const list = document.getElementById('cart-list');
+            const totalDisplay = document.getElementById('cart-total');
+            const countDisplay = document.getElementById('cart-count');
+
+            if (cart.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:#999; margin-top:50px;">Your cart is empty.</p>';
+            } else {
+                list.innerHTML = cart.map((item, index) => `
+                    <div class="cart-item">
+                        <div>
+                            <div style="font-weight:600;">${item.name}</div>
+                            <div style="font-size:12px; color:#666;">Rs ${item.price} x ${item.qty}</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <b style="color:var(--primary);">Rs ${item.price * item.qty}</b>
+                            <button onclick="removeFromCart(${index})" style="background:none; border:none; color:red; cursor:pointer;">&times;</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const count = cart.reduce((sum, item) => sum + item.qty, 0);
+
+            totalDisplay.innerText = total;
+            countDisplay.innerText = count;
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateUI();
+        }
+
+        function filterMenu(cat, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filtered = cat === 'all' ? menuData : menuData.filter(i => i.cat === cat);
+            render(filtered);
+        }
+
+        function searchMenu(query) {
+            const filtered = menuData.filter(item => 
+                item.name.toLowerCase().includes(query.toLowerCase())
+            );
+            render(filtered);
+        }
+
+        function toggleCart() {
+            document.getElementById('cart-sidebar').classList.toggle('open');
+        }
+
+        // Initial Load
+        render(menuData);
+    </script>
+</body>
+</html>
